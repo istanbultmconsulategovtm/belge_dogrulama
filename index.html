@@ -4,142 +4,150 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Belge Doğrulama Sistemi</title>
-
-    <!--
-      Aşağıda, tamamen gömülü hâle getirilmiş minimal Bootstrap 5, FontAwesome ve
-      CSV → JSON fonksiyonunu içeren kod parçaları bulunuyor. Böylece dış CDN bağımlılığı yok.
-    -->
-
-    <!-- Bootstrap 5 (minimal reset + grid/flex/stil) -->
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- SheetJS (XLSX) for Excel parsing -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <style>
-        html{line-height:1.15;-webkit-text-size-adjust:100%}
-        body{margin:0;font-family:"Segoe UI",Tahoma,Geneva,Verdana,sans-serif;line-height:1.5;color:#202124;background-color:#f0f2f5}
-        *,::before,::after{box-sizing:border-box;border:0 solid #202124}
-        img,svg,video,canvas,audio,iframe{display:block;vertical-align:middle}
-        button,input,select,textarea{font-family:inherit;font-size:inherit;line-height:inherit;margin:0}
-        button{text-transform:none}[role=button]{cursor:pointer}
-        table{border-collapse:collapse}
-        h1,h2,h3,h4,h5,h6{margin:0;font-size:inherit;font-weight:inherit}
-        a{color:inherit;text-decoration:inherit}
-        ul,ol{margin:0;padding:0;list-style:none}
-
-        /* Container ve Grid */
-        .container{width:100%;padding-left:1rem;padding-right:1rem;margin-right:auto;margin-left:auto}
-        @media(min-width:576px){.container{max-width:540px}}
-        @media(min-width:768px){.container{max-width:720px}}
-        @media(min-width:992px){.container{max-width:960px}}
-        @media(min-width:1200px){.container{max-width:1140px}}
-        @media(min-width:1400px){.container{max-width:1320px}}
-        .row{display:flex;flex-wrap:wrap;margin-top:-1rem;margin-left:-.5rem;margin-right:-.5rem}
-        .row>*{flex-shrink:0;width:100%;max-width:100%;padding-top:1rem;padding-left:.5rem;padding-right:.5rem}
-        .col-md-4{flex:0 0 auto;width:33.333333%}
-        @media(max-width:767.98px){.col-md-4{flex:0 0 auto;width:100%}}
-        .col-md-8{flex:0 0 auto;width:66.666667%}
-        @media(max-width:767.98px){.col-md-8{flex:0 0 auto;width:100%}}
-        .col-lg-6{flex:0 0 auto;width:50%}
-        @media(max-width:991.98px){.col-lg-6{flex:0 0 auto;width:100%}}
-
-        /* Navbar */
-        .navbar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;padding:.5rem 1rem;background:linear-gradient(135deg,#1a73e8,#4285f4);box-shadow:0 2px 10px rgba(0,0,0,.1)}
-        .navbar .container{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between}
-        .navbar-brand{display:flex;align-items:center;font-size:1.25rem;font-weight:500;color:#fff;cursor:pointer}
-        .navbar-toggler{background-color:transparent;border:none;font-size:1.25rem;color:#fff;cursor:pointer}
-        .navbar-collapse{flex-grow:1;align-items:center}
-        .navbar-nav{display:flex;flex-direction:row;padding-left:0;margin-bottom:0;list-style:none}
-        .nav-link{display:block;padding:.5rem 1rem;color:#fff;cursor:pointer}
-        .nav-link:hover{text-decoration:underline}
-
-        /* Butonlar */
-        .btn{display:inline-block;font-weight:400;color:#fff;text-align:center;vertical-align:middle;user-select:none;background-color:var(--primary);border:1px solid var(--primary);padding:.5rem 1rem;font-size:1rem;line-height:1.5;border-radius:.375rem;transition:background-color .15s ease,border-color .15s ease;cursor:pointer}
-        .btn:hover{background-color:var(--secondary);border-color:var(--secondary)}
-        .btn-primary{--bs-btn-bg:var(--primary);--bs-btn-border-color:var(--primary)}
-        .btn-success{--bs-btn-bg:#34a853;--bs-btn-border-color:#34a853}
-        .btn-info{--bs-btn-bg:#0d6efd;--bs-btn-border-color:#0d6efd}
-        .btn-danger{--bs-btn-bg:#dc3545;--bs-btn-border-color:#dc3545}
-        .btn-outline-primary{color:var(--primary);border-color:var(--primary)}
-        .btn-outline-primary:hover{color:#fff;background-color:var(--primary)}
-
-        /* Hero Section */
-        .hero-section{background:linear-gradient(135deg,#1a73e8,#4285f4);color:#fff;border-radius:0 0 30px 30px;padding:80px 0;margin-bottom:40px;text-align:center}
-        .display-4{font-size:2.5rem;font-weight:700;line-height:1.2}
-        .lead{font-size:1.25rem;font-weight:300}
-
-        /* Kartlar ve İkonlar */
-        .card{border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,.1);border:none;transition:transform .3s ease}
-        .card:hover{transform:translateY(-5px)}
-        .feature-icon{width:70px;height:70px;border-radius:50%;background:linear-gradient(135deg,#1a73e8,#4285f4);display:flex;align-items:center;justify-content:center;margin:0 auto 20px;color:#fff;font-size:28px}
-
-        /* Form Container */
-        .form-container{background-color:#fff;border-radius:15px;padding:30px;box-shadow:0 5px 15px rgba(0,0,0,.08)}
-        .result-card{min-height:200px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:18px}
-        .success-result{background-color:rgba(52,168,83,.1);border-left:4px solid var(--success)}
-        .error-result{background-color:rgba(234,67,53,.1);border-left:4px solid var(--danger)}
-
-        /* Login Container */
-        .login-container{max-width:500px;margin:50px auto;background-color:#fff;border-radius:15px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,.1)}
-
-        /* Admin Panel */
-        .admin-panel{background-color:#f8f9fa;border-radius:15px;padding:25px}
-        .table-responsive{overflow-x:auto}
-        .table{width:100%;margin-bottom:1rem;color:#212529}
-        .table-striped tbody tr:nth-of-type(odd){background-color:rgba(0,0,0,.05)}
-        .table-hover tbody tr:hover{background-color:rgba(0,0,0,.075)}
-        .table-primary>thead{background-color:rgba(13,110,253,.25);color:#000}
-        .badge{display:inline-block;padding:.35em .65em;font-size:.75em;font-weight:700;line-height:1;color:#fff;text-align:center;white-space:nowrap;vertical-align:baseline;border-radius:.375rem}
-        .bg-success{background-color:#34a853!important}
-        .bg-danger{background-color:#dc3545!important}
-
-        /* Footer */
-        footer{background:linear-gradient(135deg,#1a73e8,#4285f4);color:#fff;padding:30px 0;margin-top:60px}
-        .text-white{color:#fff!important}
-        .text-primary{color:var(--primary)!important}
-        .text-success{color:#34a853!important}
-        .text-danger{color:#dc3545!important}
-    </style>
-
-    <!-- Font Awesome (sadece kullanılan ikon kodları) -->
-    <style>
-        @font-face {
-            font-family: "Font Awesome 6 Free";
-            font-weight: 900;
-            font-style: normal;
-            font-display: auto;
-            src: url(data:font/woff2;base64,d09GMgABAAAAAAp8AA8AAAAAL7gAAAKvAAEAAAAAAAAAAAAAAAAAAAAAAAAAAAAAP0ZGVE0cG50...) format("woff2");
+        :root {
+            --primary: #1a73e8;
+            --secondary: #4285f4;
+            --success: #34a853;
+            --danger: #ea4335;
+            --dark-text: #202124;
         }
-        .fa, .fas { font-family: "Font Awesome 6 Free"; font-weight: 900; }
-        .fa-file-contract:before { content: "\f56c"; }
-        .fa-user-shield:before  { content: "\f505"; }
-        .fa-check-circle:before { content: "\f058"; }
-        .fa-exclamation-circle:before { content: "\f06a"; }
-        .fa-times-circle:before { content: "\f057"; }
-        .fa-shield-alt:before { content: "\f3ed"; }
-        .fa-bolt:before { content: "\f0e7"; }
-        .fa-database:before { content: "\f1c0"; }
-        .fa-file-excel:before { content: "\f1c3"; }
-        .fa-file-export:before { content: "\f56e"; }
-        .fa-trash-alt:before { content: "\f2ed"; }
-        .fa-trash:before { content: "\f1f8"; }
-        .fa-phone:before { content: "\f095"; }
-        .fa-envelope:before { content: "\f0e0"; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f0f2f5;
+            color: var(--dark-text);
+        }
+        
+        .card {
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s ease;
+            border: none;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .btn-primary {
+            background-color: var(--primary);
+            border-color: var(--primary);
+            padding: 10px 20px;
+            font-weight: 600;
+        }
+        
+        .btn-primary:hover {
+            background-color: var(--secondary);
+            border-color: var(--secondary);
+        }
+        
+        .navbar {
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #1a73e8, #4285f4);
+            color: white;
+            border-radius: 0 0 30px 30px;
+            padding: 80px 0;
+            margin-bottom: 40px;
+        }
+        
+        .feature-icon {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 28px;
+        }
+        
+        .form-container {
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+        
+        .result-card {
+            min-height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            font-size: 18px;
+        }
+        
+        .success-result {
+            background-color: rgba(52, 168, 83, 0.1);
+            border-left: 4px solid var(--success);
+        }
+        
+        .error-result {
+            background-color: rgba(234, 67, 53, 0.1);
+            border-left: 4px solid var(--danger);
+        }
+        
+        .admin-panel {
+            background-color: #f8f9fa;
+            border-radius: 15px;
+            padding: 25px;
+        }
+        
+        footer {
+            background: linear-gradient(135deg, #1a73e8, #4285f4);
+            color: white;
+            padding: 30px 0;
+            margin-top: 60px;
+        }
+        
+        .login-container {
+            max-width: 500px;
+            margin: 50px auto;
+            background-color: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        }
     </style>
 </head>
 <body>
     <!-- Navbar -->
-    <nav class="navbar sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
         <div class="container">
-            <span class="navbar-brand d-flex align-items-center" onclick="showHome()">
+            <a class="navbar-brand d-flex align-items-center" href="javascript:void(0)" onclick="showHome()">
                 <i class="fas fa-file-contract me-2"></i>
                 <span class="fw-bold">BELGE DOĞRULAMA</span>
-            </span>
+            </a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                ☰
+                <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
-                    <li class="nav-item"><span class="nav-link active" onclick="showHome()">Ana Sayfa</span></li>
-                    <li class="nav-item"><span class="nav-link" onclick="showVerification()">Belge Doğrula</span></li>
-                    <li class="nav-item"><span class="nav-link" onclick="showAdminLogin()">Yönetici Girişi</span></li>
-                    <li class="nav-item"><span class="nav-link" onclick="showContact()">İletişim</span></li>
+                    <li class="nav-item">
+                        <a class="nav-link active" href="javascript:void(0)" onclick="showHome()">Ana Sayfa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0)" onclick="showVerification()">Belge Doğrula</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0)" onclick="showAdminLogin()">Yönetici Girişi</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="javascript:void(0)" onclick="showContact()">İletişim</a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -147,14 +155,14 @@
 
     <!-- Hero Section -->
     <section class="hero-section" id="home-section">
-        <div class="container">
+        <div class="container text-center">
             <h1 class="display-4 fw-bold mb-4">Belge Doğrulama Sistemi</h1>
             <p class="lead mb-5">Belgelerinizi kolay, hızlı ve güvenli bir şekilde doğrulayın</p>
             <div class="d-flex justify-content-center gap-3">
-                <button class="btn btn-light btn-lg" onclick="showVerification()">
+                <button class="btn btn-light btn-lg px-4 py-2 fw-bold" onclick="showVerification()">
                     <i class="fas fa-check-circle me-2"></i>Belge Doğrula
                 </button>
-                <button class="btn btn-outline-light btn-lg" onclick="showAdminLogin()">
+                <button class="btn btn-outline-light btn-lg px-4 py-2" onclick="showAdminLogin()">
                     <i class="fas fa-user-shield me-2"></i>Yönetici Girişi
                 </button>
             </div>
@@ -169,24 +177,33 @@
                 <p class="lead text-muted">Belgelerinizin güvenliğini ve geçerliliğini sağlamak için tasarlanmış kapsamlı çözüm</p>
             </div>
         </div>
+        
         <div class="row g-4">
             <div class="col-md-4">
                 <div class="card h-100 p-4 text-center">
-                    <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                    <div class="feature-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
                     <h3 class="h5 fw-bold">Güvenli Doğrulama</h3>
                     <p class="text-muted">Gelişmiş güvenlik protokolleri ile belgeleriniz tam koruma altında.</p>
                 </div>
             </div>
+            
             <div class="col-md-4">
                 <div class="card h-100 p-4 text-center">
-                    <div class="feature-icon"><i class="fas fa-bolt"></i></div>
+                    <div class="feature-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
                     <h3 class="h5 fw-bold">Hızlı Sonuç</h3>
                     <p class="text-muted">Saniyeler içinde belgelerinizin geçerliliğini doğrulayın.</p>
                 </div>
             </div>
+            
             <div class="col-md-4">
                 <div class="card h-100 p-4 text-center">
-                    <div class="feature-icon"><i class="fas fa-database"></i></div>
+                    <div class="feature-icon">
+                        <i class="fas fa-database"></i>
+                    </div>
                     <h3 class="h5 fw-bold">Geniş Veritabanı</h3>
                     <p class="text-muted">Binlerce kayıt ile kapsamlı doğrulama imkanı.</p>
                 </div>
@@ -201,22 +218,26 @@
                 <div class="form-container">
                     <h2 class="text-center mb-4 fw-bold">Belge Doğrulama</h2>
                     <p class="text-center text-muted mb-4">Belge bilgilerinizi aşağıdaki formu doldurarak doğrulayabilirsiniz</p>
+                    
                     <form id="verification-form">
                         <div class="mb-3">
                             <label for="document-number" class="form-label fw-bold">Belge Numarası</label>
                             <input type="text" class="form-control form-control-lg" id="document-number" placeholder="Belge numaranızı girin" required>
                         </div>
+                        
                         <div class="mb-4">
                             <label for="document-date" class="form-label fw-bold">Belge Tarihi</label>
                             <input type="text" class="form-control form-control-lg" id="document-date" placeholder="GG/AA/YYYY formatında girin" required>
                             <div class="form-text">Örnek: 15/07/2023</div>
                         </div>
+                        
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-search me-2"></i>Belgeyi Doğrula
                             </button>
                         </div>
                     </form>
+                    
                     <div class="result-card mt-4 p-4 d-none" id="result-container">
                         <div id="verification-result"></div>
                     </div>
@@ -232,20 +253,24 @@
                 <div class="login-container">
                     <h2 class="text-center mb-4 fw-bold">Yönetici Girişi</h2>
                     <p class="text-center text-muted mb-4">Yönetici paneline erişmek için lütfen giriş yapın</p>
+                    
                     <form id="admin-login-form">
                         <div class="mb-3">
                             <label for="admin-username" class="form-label fw-bold">Kullanıcı Adı</label>
                             <input type="text" class="form-control form-control-lg" id="admin-username" placeholder="Kullanıcı adınızı girin" required>
                         </div>
+                        
                         <div class="mb-4">
                             <label for="admin-password" class="form-label fw-bold">Parola</label>
                             <input type="password" class="form-control form-control-lg" id="admin-password" placeholder="Parolanızı girin" required>
                         </div>
+                        
                         <div class="d-grid mb-3">
                             <button type="submit" class="btn btn-primary btn-lg">
                                 <i class="fas fa-sign-in-alt me-2"></i>Giriş Yap
                             </button>
                         </div>
+                        
                         <div class="alert alert-danger d-none" id="login-error"></div>
                     </form>
                 </div>
@@ -261,8 +286,9 @@
                 <i class="fas fa-sign-out-alt me-2"></i>Çıkış Yap
             </button>
         </div>
+        
         <div class="admin-panel">
-            <!-- Veri Görüntüle / CSV İçe Aktar / Dışa Aktar -->
+            <!-- Birinci satır: Veri Görüntüle / Excel İçe Aktar / Dışa Aktar -->
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
@@ -274,16 +300,18 @@
                         </div>
                     </div>
                 </div>
+                
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <div class="card-body text-center">
                             <i class="fas fa-file-excel display-4 text-success mb-3"></i>
-                            <h3 class="card-title">CSV'den İçe Aktar</h3>
-                            <p class="card-text">CSV dosyalarından toplu kayıt ekleyin</p>
+                            <h3 class="card-title">Excel'den İçe Aktar</h3>
+                            <p class="card-text">Excel dosyalarından toplu kayıt ekleyin</p>
                             <button class="btn btn-success mt-2" onclick="importFromExcel()">İçe Aktar</button>
                         </div>
                     </div>
                 </div>
+                
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <div class="card-body text-center">
@@ -295,7 +323,7 @@
                     </div>
                 </div>
             </div>
-            <!-- Veri Sil / Verileri Temizle -->
+            <!-- İkinci satır: Veri Sil / Verileri Temizle -->
             <div class="row">
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
@@ -307,6 +335,7 @@
                         </div>
                     </div>
                 </div>
+                
                 <div class="col-md-4 mb-4">
                     <div class="card h-100">
                         <div class="card-body text-center">
@@ -319,6 +348,7 @@
                 </div>
             </div>
         </div>
+        
         <!-- Veritabanı Kayıtları Tablosu -->
         <div class="mt-5 d-none" id="database-section">
             <h3 class="fw-bold mb-4">Veritabanı Kayıtları</h3>
@@ -347,6 +377,7 @@
                 <div class="form-container">
                     <h2 class="text-center mb-4 fw-bold">İletişim</h2>
                     <p class="text-center text-muted mb-4">Sorularınız veya destek talepleriniz için bize ulaşın</p>
+                    
                     <div class="row mb-4">
                         <div class="col-md-6 mb-3">
                             <div class="card h-100">
@@ -357,6 +388,7 @@
                                 </div>
                             </div>
                         </div>
+                        
                         <div class="col-md-6 mb-3">
                             <div class="card h-100">
                                 <div class="card-body text-center">
@@ -367,19 +399,23 @@
                             </div>
                         </div>
                     </div>
+                    
                     <form>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Adınız</label>
                             <input type="text" class="form-control form-control-lg" placeholder="Adınızı girin" required>
                         </div>
+                        
                         <div class="mb-3">
                             <label class="form-label fw-bold">E-posta</label>
                             <input type="email" class="form-control form-control-lg" placeholder="E-posta adresinizi girin" required>
                         </div>
+                        
                         <div class="mb-3">
                             <label class="form-label fw-bold">Mesajınız</label>
                             <textarea class="form-control form-control-lg" rows="4" placeholder="Mesajınızı yazın" required></textarea>
                         </div>
+                        
                         <div class="d-grid">
                             <button type="submit" class="btn btn-primary btn-lg">Gönder</button>
                         </div>
@@ -397,15 +433,17 @@
                     <h5 class="fw-bold mb-3">BELGE DOĞRULAMA</h5>
                     <p>Güvenilir belge doğrulama çözümleri sunan lider platform.</p>
                 </div>
+                
                 <div class="col-md-4 mb-4">
                     <h5 class="fw-bold mb-3">HIZLI LİNKLER</h5>
                     <ul class="list-unstyled">
-                        <li><span class="text-white" onclick="showHome()">Ana Sayfa</span></li>
-                        <li><span class="text-white" onclick="showVerification()">Belge Doğrula</span></li>
-                        <li><span class="text-white" onclick="showContact()">İletişim</span></li>
-                        <li><span class="text-white" onclick="showAdminLogin()">Yönetici Girişi</span></li>
+                        <li class="mb-2"><a href="javascript:void(0)" class="text-white text-decoration-none" onclick="showHome()">Ana Sayfa</a></li>
+                        <li class="mb-2"><a href="javascript:void(0)" class="text-white text-decoration-none" onclick="showVerification()">Belge Doğrula</a></li>
+                        <li class="mb-2"><a href="javascript:void(0)" class="text-white text-decoration-none" onclick="showContact()">İletişim</a></li>
+                        <li><a href="javascript:void(0)" class="text-white text-decoration-none" onclick="showAdminLogin()">Yönetici Girişi</a></li>
                     </ul>
                 </div>
+                
                 <div class="col-md-4 mb-4">
                     <h5 class="fw-bold mb-3">BİZİ TAKİP EDİN</h5>
                     <div class="d-flex gap-3">
@@ -416,41 +454,23 @@
                     </div>
                 </div>
             </div>
+            
             <hr class="bg-light">
+            
             <div class="text-center pt-3">
                 <p class="mb-0">© 2023 Belge Doğrulama Sistemi. Tüm hakları saklıdır.</p>
             </div>
         </div>
     </footer>
 
-    <!-- Minimal CSV→JSON dönüştürücü (SheetJS alternatifi) -->
+    <!-- Bootstrap + Custom JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        var XLSX = (function(){
-            function read(data) { return { SheetNames: ["Sheet1"], Sheets: { "Sheet1": { '!raw': data } } }; }
-            function sheet_to_json(ws,opts) {
-                var aoa = ws['!raw'].split("\n").map(function(r){ return r.split(","); });
-                var headers = aoa[0].map(function(h){ return h.toString().toLowerCase(); });
-                var out = [];
-                for (var i = 1; i < aoa.length; i++) {
-                    var row = aoa[i];
-                    if (!row.length) continue;
-                    var obj = {};
-                    for (var j = 0; j < headers.length; j++) {
-                        obj[headers[j]] = row[j];
-                    }
-                    out.push(obj);
-                }
-                return out;
-            }
-            return { read: read, sheet_to_json: sheet_to_json };
-        })();
-    </script>
-
-    <!-- Custom JavaScript -->
-    <script>
-        let database = []; // Boş diziyle başla
+        // Başlangıçta boş veritabanı
+        let database = [];
 
         document.addEventListener('DOMContentLoaded', function() {
+            // Form event listener'ları
             const verificationForm = document.getElementById('verification-form');
             if (verificationForm) {
                 verificationForm.addEventListener('submit', function(e) {
@@ -467,12 +487,21 @@
                 });
             }
 
+            // İlk açılışta Ana Sayfa
             showHome();
         });
 
+        // Bölümleri gizleme/gösterme fonksiyonları
         function hideAllSections() {
-            ['home-section','features-section','verification-section','admin-login-section','admin-panel-section','contact-section']
-            .forEach(function(id) {
+            const sections = [
+                'home-section',
+                'features-section',
+                'verification-section',
+                'admin-login-section',
+                'admin-panel-section',
+                'contact-section'
+            ];
+            sections.forEach(id => {
                 const sec = document.getElementById(id);
                 if (sec) sec.classList.add('d-none');
             });
@@ -480,8 +509,10 @@
 
         function showHome() {
             hideAllSections();
-            document.getElementById('home-section').classList.remove('d-none');
-            document.getElementById('features-section').classList.remove('d-none');
+            const home = document.getElementById('home-section');
+            const features = document.getElementById('features-section');
+            if (home) home.classList.remove('d-none');
+            if (features) features.classList.remove('d-none');
         }
 
         function showVerification() {
@@ -495,42 +526,53 @@
 
         function showAdminLogin() {
             hideAllSections();
-            document.getElementById('admin-login-section').classList.remove('d-none');
-            document.getElementById('login-error').classList.add('d-none');
+            const adminLogin = document.getElementById('admin-login-section');
+            const loginError = document.getElementById('login-error');
+            if (adminLogin) adminLogin.classList.remove('d-none');
+            if (loginError) loginError.classList.add('d-none');
         }
 
         function showAdminPanel() {
             hideAllSections();
-            document.getElementById('admin-panel-section').classList.remove('d-none');
-            document.getElementById('database-section').classList.add('d-none');
+            const adminPanel = document.getElementById('admin-panel-section');
+            const dbSection = document.getElementById('database-section');
+            if (adminPanel) adminPanel.classList.remove('d-none');
+            if (dbSection) dbSection.classList.add('d-none');
         }
 
         function showContact() {
             hideAllSections();
-            document.getElementById('contact-section').classList.remove('d-none');
+            const contact = document.getElementById('contact-section');
+            if (contact) contact.classList.remove('d-none');
         }
 
         function resetVerificationForm() {
-            document.getElementById('document-number').value = '';
-            document.getElementById('document-date').value = '';
-            document.getElementById('result-container').classList.add('d-none');
+            const numInput = document.getElementById('document-number');
+            const dateInput = document.getElementById('document-date');
+            const resultContainer = document.getElementById('result-container');
+            if (numInput) numInput.value = '';
+            if (dateInput) dateInput.value = '';
+            if (resultContainer) resultContainer.classList.add('d-none');
         }
 
-        // Belge Doğrulama (GG/AA/YYYY)
+        // Belge Doğrulama (GG/AA/YYYY formatına göre kontrol)
         function verifyDocument() {
             const docNumber = document.getElementById('document-number').value.trim();
-            const docDate   = document.getElementById('document-date').value.trim();
+            const docDate = document.getElementById('document-date').value.trim();
             const resultContainer = document.getElementById('result-container');
-            const resultElement   = document.getElementById('verification-result');
+            const resultElement = document.getElementById('verification-result');
 
-            resultContainer.classList.remove('success-result','error-result');
+            if (!resultContainer || !resultElement) return;
+
+            resultContainer.classList.remove('success-result', 'error-result');
             resultContainer.classList.remove('d-none');
 
             if (!docNumber || !docDate) {
                 resultContainer.classList.add('error-result');
                 resultElement.innerHTML = `
                     <h3 class="text-danger"><i class="fas fa-exclamation-circle me-2"></i>Hata!</h3>
-                    <p>Lütfen belge numarası ve tarih bilgilerini giriniz.</p>`;
+                    <p>Lütfen belge numarası ve tarih bilgilerini giriniz.</p>
+                `;
                 return;
             }
 
@@ -541,21 +583,27 @@
             if (doc && doc.valid) {
                 resultContainer.classList.add('success-result');
                 resultElement.innerHTML = `
-                    <div class="text-success mb-3"><i class="fas fa-check-circle fa-3x"></i></div>
+                    <div class="text-success mb-3">
+                        <i class="fas fa-check-circle fa-3x"></i>
+                    </div>
                     <h3 class="text-success">BELGE DOĞRULANDI</h3>
                     <p><strong>Belge No:</strong> ${doc.id}</p>
                     <p><strong>Tarih:</strong> ${doc.date}</p>
                     <p><strong>Soyadı Adı:</strong> ${doc.name}</p>
-                    <p class="mt-3">Bu belge sistemimizde kayıtlıdır ve geçerlidir.</p>`;
+                    <p class="mt-3">Bu belge sistemimizde kayıtlıdır ve geçerlidir.</p>
+                `;
             } else {
                 resultContainer.classList.add('error-result');
                 resultElement.innerHTML = `
-                    <div class="text-danger mb-3"><i class="fas fa-times-circle fa-3x"></i></div>
+                    <div class="text-danger mb-3">
+                        <i class="fas fa-times-circle fa-3x"></i>
+                    </div>
                     <h3 class="text-danger">BELGE BULUNAMADI</h3>
                     <p><strong>Girilen Bilgiler:</strong></p>
                     <p>Belge No: ${docNumber}</p>
                     <p>Tarih: ${docDate}</p>
-                    <p class="mt-3">Lütfen bilgilerinizi kontrol edip tekrar deneyiniz.</p>`;
+                    <p class="mt-3">Lütfen bilgilerinizi kontrol edip tekrar deneyiniz. Eğer sorun devam ederse yetkililerle iletişime geçin.</p>
+                `;
             }
         }
 
@@ -564,6 +612,8 @@
             const username = document.getElementById('admin-username').value.trim();
             const password = document.getElementById('admin-password').value.trim();
             const errorElement = document.getElementById('login-error');
+
+            if (!errorElement) return;
 
             if (username === "tkmstamb" && password === "turstm1!stamtkm852496+") {
                 showAdminPanel();
@@ -574,14 +624,18 @@
         }
 
         function logoutAdmin() {
-            document.getElementById('admin-username').value = '';
-            document.getElementById('admin-password').value = '';
+            const userInput = document.getElementById('admin-username');
+            const passInput = document.getElementById('admin-password');
+            if (userInput) userInput.value = '';
+            if (passInput) passInput.value = '';
             showAdminLogin();
         }
 
-        // Veritabanını tabloya yükle
+        // Admin Panel: Veritabanı Görüntüle
         function showDatabase() {
             const tableBody = document.getElementById('database-table');
+            if (!tableBody) return;
+
             tableBody.innerHTML = '';
             database.forEach(doc => {
                 const row = document.createElement('tr');
@@ -589,74 +643,98 @@
                     <td>${doc.id}</td>
                     <td>${doc.date}</td>
                     <td>${doc.name}</td>
-                    <td><span class="badge ${doc.valid ? 'bg-success' : 'bg-danger'}">${doc.valid ? 'Geçerli' : 'Geçersiz'}</span></td>`;
+                    <td>
+                        <span class="badge ${doc.valid ? 'bg-success' : 'bg-danger'}">
+                            ${doc.valid ? 'Geçerli' : 'Geçersiz'}
+                        </span>
+                    </td>
+                `;
                 tableBody.appendChild(row);
             });
-            document.getElementById('database-section').classList.remove('d-none');
+
+            const dbSection = document.getElementById('database-section');
+            if (dbSection) dbSection.classList.remove('d-none');
         }
 
-        // CSV'den içe aktarma (SheetJS alternatifi)
+        // Excel'den içe aktarma (SheetJS ile)
         function importFromExcel() {
             const input = document.createElement('input');
             input.type = 'file';
-            input.accept = '.csv';
+            input.accept = '.xlsx, .xls';
             input.onchange = e => {
                 const file = e.target.files[0];
                 if (!file) return;
                 const reader = new FileReader();
                 reader.onload = function(evt) {
-                    const text = evt.target.result;
-                    // Her satır: id,date,name,valid
-                    const lines = text.split('\n').filter(l => l.trim());
+                    const data = new Uint8Array(evt.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    const firstSheetName = workbook.SheetNames[0];
+                    const worksheet = workbook.Sheets[firstSheetName];
+                    const jsonData = XLSX.utils.sheet_to_json(worksheet, { defval: "" });
                     let addedCount = 0;
-                    for (let i = 1; i < lines.length; i++) {
-                        const cols = lines[i].split(',');
-                        if (cols.length < 4) continue;
-                        const idVal    = parseInt(cols[0].trim());
-                        const dateVal  = cols[1].trim();
-                        const nameVal  = cols[2].trim();
-                        const validVal = cols[3].trim().toLowerCase() === 'true';
-                        const exists = database.some(d => d.id === idVal && d.date === dateVal);
-                        if (!exists) {
-                            database.push({ id: idVal, date: dateVal, name: nameVal, valid: validVal });
-                            addedCount++;
+                    jsonData.forEach(rowObj => {
+                        if (
+                            rowObj.hasOwnProperty('id') &&
+                            rowObj.hasOwnProperty('date') &&
+                            rowObj.hasOwnProperty('name') &&
+                            rowObj.hasOwnProperty('valid')
+                        ) {
+                            const idVal = parseInt(rowObj.id);
+                            const dateVal = rowObj.date.toString();
+                            const nameVal = rowObj.name.toString();
+                            const validVal = String(rowObj.valid).toLowerCase() === 'true';
+
+                            const exists = database.some(d => d.id === idVal && d.date === dateVal);
+                            if (!exists) {
+                                database.push({
+                                    id: idVal,
+                                    date: dateVal,
+                                    name: nameVal,
+                                    valid: validVal
+                                });
+                                addedCount++;
+                            }
                         }
-                    }
+                    });
+
                     if (addedCount > 0) {
-                        alert(`CSV dosyasından ${addedCount} yeni kayıt başarıyla aktarıldı!`);
+                        alert(`Excel dosyasından ${addedCount} yeni kayıt başarıyla aktarıldı!`);
                     } else {
-                        alert("Yeni veri bulunamadı veya zaten ekli.");
+                        alert("Excel dosyasından aktarmaya uygun yeni veri bulunamadı veya zaten ekli.");
                     }
                 };
                 reader.onerror = function(err) {
-                    alert("Dosya okunurken hata: " + err);
+                    alert("Excel dosyası okunurken hata oluştu:\n" + err);
                 };
-                reader.readAsText(file);
+                reader.readAsArrayBuffer(file);
             };
             input.click();
         }
 
-        // CSV olarak dışa aktarma
+        // CSV şeklinde dışa aktarma
         function exportDatabase() {
-            const headers = ['id','date','name','valid'];
-            const rows = database.map(d => `${d.id},${d.date},${d.name},${d.valid}`);
-            const csvContent = headers.join(',') + '\n' + rows.join('\n');
+            const headers = ['id', 'date', 'name', 'valid'];
+            const rows = database.map(d => [d.id, d.date, d.name, d.valid]);
+            let csvContent = headers.join(',') + '\n';
+            rows.forEach(r => {
+                csvContent += r.join(',') + '\n';
+            });
             const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
             const url = URL.createObjectURL(blob);
-            const link = document.createElement('a');
-            link.setAttribute('href', url);
-            link.setAttribute('download', 'veritabani.csv');
+            const link = document.createElement("a");
+            link.setAttribute("href", url);
+            link.setAttribute("download", "veritabani.csv");
             link.style.visibility = 'hidden';
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         }
 
-        // Tek bir kaydı sil
+        // Tek bir kaydı silmek için: ID ve Tarih sor, eşleşeni kaldır
         function deleteRecord() {
             const idStr = prompt("Silinecek kaydın Belge Numarasını girin:");
-            if (idStr === null) return;
-            const dateStr = prompt("Silinecek kaydın Tarihini (GG/AA/YYYY) girin:");
+            if (idStr === null) return; 
+            const dateStr = prompt("Silinecek kaydın Tarihini (GG/AA/YYYY formatında) girin:");
             if (dateStr === null) return;
 
             const idVal = parseInt(idStr.trim());
@@ -664,18 +742,18 @@
             const index = database.findIndex(d => d.id === idVal && d.date === dateVal);
             if (index !== -1) {
                 database.splice(index, 1);
-                alert(`Belge No: ${idVal}, Tarih: ${dateVal} silindi.`);
+                alert(`Belge No: ${idVal}, Tarih: ${dateVal} kaydı başarıyla silindi.`);
             } else {
-                alert("Kayıt bulunamadı.");
+                alert("Eşleşen kayıt bulunamadı. Lütfen bilgileri kontrol edip tekrar deneyin.");
             }
         }
 
-        // Tüm kayıtları temizle
+        // Tüm verileri temizleme (array’i boşalt)
         function clearAllData() {
-            if (confirm("Tüm kayıtları silmek istediğinize emin misiniz?")) {
-                database = [];
-                alert("Tüm veriler silindi.");
-            }
+            const confirmDelete = confirm("Tüm kayıtları silmek istediğinizden emin misiniz?");
+            if (!confirmDelete) return;
+            database = [];
+            alert("Tüm veriler başarıyla temizlendi.");
         }
     </script>
 </body>
